@@ -138,6 +138,61 @@ const Map<String, Map<AppLanguage, String>> _tr = {
     AppLanguage.ru: 'Размер шрифта',
     AppLanguage.kk: 'Қаріп өлшемі',
   },
+  'question_word': {
+    AppLanguage.en: 'Question',
+    AppLanguage.ru: 'Вопрос',
+    AppLanguage.kk: 'Сұрақ',
+  },
+  'score': {
+    AppLanguage.en: 'Score',
+    AppLanguage.ru: 'Счет',
+    AppLanguage.kk: 'Ұпай',
+  },
+  'start_mock': {
+    AppLanguage.en: 'Start Mock Test',
+    AppLanguage.ru: 'Начать пробный тест',
+    AppLanguage.kk: 'Сынақ тестін бастау',
+  },
+  'prev': {
+    AppLanguage.en: 'Prev',
+    AppLanguage.ru: 'Назад',
+    AppLanguage.kk: 'Артқа',
+  },
+  'next': {
+    AppLanguage.en: 'Next',
+    AppLanguage.ru: 'Далее',
+    AppLanguage.kk: 'Келесі',
+  },
+  'finish': {
+    AppLanguage.en: 'Finish',
+    AppLanguage.ru: 'Завершить',
+    AppLanguage.kk: 'Аяқтау',
+  },
+  'back_home': {
+    AppLanguage.en: 'Back to Home',
+    AppLanguage.ru: 'На главную',
+    AppLanguage.kk: 'Басты бетке',
+  },
+  'review_answers': {
+    AppLanguage.en: 'Review Answers',
+    AppLanguage.ru: 'Просмотр ответов',
+    AppLanguage.kk: 'Жауаптарды қарау',
+  },
+  'correct_label': {
+    AppLanguage.en: 'Correct',
+    AppLanguage.ru: 'Правильно',
+    AppLanguage.kk: 'Дұрыс',
+  },
+  'great_job': {
+    AppLanguage.en: 'Great Job!',
+    AppLanguage.ru: 'Отлично!',
+    AppLanguage.kk: 'Жарайсыз!',
+  },
+  'keep_practicing': {
+    AppLanguage.en: 'Keep Practicing',
+    AppLanguage.ru: 'Продолжайте практиковаться',
+    AppLanguage.kk: 'Дайындала түсіңіз',
+  },
 };
 
 String tr(BuildContext context, String key) {
@@ -1407,7 +1462,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                 );
               },
               icon: const Icon(Icons.timer_outlined),
-              label: const Text('Start Mock Test'),
+              label: Text(tr(context, 'start_mock')),
             )
           : null,
       appBar: AppBar(
@@ -1598,14 +1653,14 @@ class _PlayTestPageState extends State<PlayTestPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Question ${index + 1} / ${questions.length}'),
+        title: Text('${tr(context, "question_word")} ${index + 1} / ${questions.length}'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(20),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Row(
               children: [
-                const Text("Score: "),
+                Text("${tr(context, 'score')}: "),
                 Expanded(
                   child: LinearProgressIndicator(
                     value: questions.isNotEmpty ? currentScore / questions.length : 0,
@@ -1734,7 +1789,7 @@ class _PlayTestPageState extends State<PlayTestPage> {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: prev,
-                        child: const Text('Prev'),
+                        child: Text(tr(context, 'prev')),
                       ),
                     )
                   else
@@ -1743,7 +1798,7 @@ class _PlayTestPageState extends State<PlayTestPage> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: next,
-                      child: Text(index == questions.length - 1 ? 'Finish' : 'Next'),
+                      child: Text(index == questions.length - 1 ? tr(context, 'finish') : tr(context, 'next')),
                     ),
                   ),
                 ],
@@ -1823,7 +1878,7 @@ class ResultPage extends StatelessWidget {
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Result'),
+        title: Text(tr(context, 'result')),
       ),
       body: Center(
         child: Column(
@@ -1856,7 +1911,7 @@ class ResultPage extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Score',
+                      tr(context, 'score'),
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: Colors.grey,
                       ),
@@ -1867,12 +1922,12 @@ class ResultPage extends StatelessWidget {
             ),
             const SizedBox(height: 48),
             Text(
-              '$score / ${test.questions.length} Correct',
+              '$score / ${test.questions.length} ${tr(context, "correct_label")}',
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
             Text(
-              score / test.questions.length > 0.7 ? 'Great Job!' : 'Keep Practicing',
+              score / test.questions.length > 0.7 ? tr(context, 'great_job') : tr(context, 'keep_practicing'),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Colors.grey[600],
               ),
@@ -1883,7 +1938,7 @@ class ResultPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
                 textStyle: const TextStyle(fontSize: 18),
               ),
-              child: const Text('Back to Home'),
+              child: Text(tr(context, 'back_home')),
               onPressed: () => Navigator.pop(context),
             ),
             const SizedBox(height: 20),
@@ -1896,7 +1951,7 @@ class ResultPage extends StatelessWidget {
                    MaterialPageRoute(builder: (_) => ReviewPage(test: reviewTest))
                  );
               }, 
-              child: const Text("Review Answers"),
+              child: Text(tr(context, 'review_answers')),
             ),
           ],
         ),
@@ -2001,7 +2056,7 @@ class _MockTestPageState extends State<MockTestPage> {
         actions: [
            TextButton(
              onPressed: _finishTest,
-             child: const Text("Finish"),
+             child: Text(tr(context, 'finish')),
            )
         ],
       ),
@@ -2013,7 +2068,7 @@ class _MockTestPageState extends State<MockTestPage> {
               child: Column(
                 children: [
                   Text(
-                    'Question ${index + 1} / ${widget.questions.length}',
+                    '${tr(context, "question_word")} ${index + 1} / ${widget.questions.length}',
                     style: Theme.of(context).textTheme.titleMedium!.copyWith(color: Colors.grey),
                   ),
                   const SizedBox(height: 8),
@@ -2053,7 +2108,7 @@ class _MockTestPageState extends State<MockTestPage> {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: prev,
-                        child: const Text('Prev'),
+                        child: Text(tr(context, 'prev')),
                       ),
                     )
                   else
@@ -2062,7 +2117,7 @@ class _MockTestPageState extends State<MockTestPage> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: next,
-                      child: Text(index == widget.questions.length - 1 ? 'Finish' : 'Next'),
+                      child: Text(index == widget.questions.length - 1 ? tr(context, 'finish') : tr(context, 'next')),
                     ),
                   ),
                 ],
