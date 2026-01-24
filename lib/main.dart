@@ -108,6 +108,29 @@ const Map<String, Map<AppLanguage, String>> _tr = {
     AppLanguage.ru: 'Тёмный режим',
     AppLanguage.kk: 'Қараңғы режим',
   },
+  'instruction_title': {
+    AppLanguage.en: 'How to create a test',
+    AppLanguage.ru: 'Как создать тест',
+    AppLanguage.kk: 'Тест қалай жасалады',
+  },
+  'instruction_content': {
+    AppLanguage.en:
+        '1. Prepare your file in .txt or .docx format.\n2. Use <question> tag for questions.\n3. Use <answer> tag for answer options.\n4. IMPORTANT: The first <answer> after a question must be the CORRECT one. The app will shuffle them randomly during the test.\n\nExample:\n<question> What is 2+2?\n<answer> 4\n<answer> 3\n<answer> 5',
+    AppLanguage.ru:
+        '1. Подготовьте файл в формате .txt или .docx.\n2. Используйте тег <question> для вопросов.\n3. Используйте тег <answer> для вариантов ответа.\n4. ВАЖНО: Первый <answer> после вопроса должен быть ПРАВИЛЬНЫМ. Приложение перемешает их случайно во время теста.\n\nПример:\n<question> Сколько будет 2+2?\n<answer> 4\n<answer> 3\n<answer> 5',
+    AppLanguage.kk:
+        '1. Файлды .txt немесе .docx форматында дайындаңыз.\n2. Сұрақтар үшін <question> тегін қолданыңыз.\n3. Жауап нұсқалары үшін <answer> тегін қолданыңыз.\n4. МАҢЫЗДЫ: Сұрақтан кейінгі бірінші <answer> ДҰРЫС жауап болуы керек. Қолданба тест кезінде оларды кездейсоқ араластырады.\n\nМысалы:\n<question> 2+2 қанша болады?\n<answer> 4\n<answer> 3\n<answer> 5',
+  },
+  'welcome_title': {
+    AppLanguage.en: 'Welcome to Test Builder!',
+    AppLanguage.ru: 'Добро пожаловать!',
+    AppLanguage.kk: 'Қош келдіңіз!',
+  },
+  'welcome_desc': {
+    AppLanguage.en: 'Create your first test by importing a file or pasting text. It\'s easy!',
+    AppLanguage.ru: 'Создайте свой первый тест, импортировав файл или вставив текст. Это просто!',
+    AppLanguage.kk: 'Файлды импорттау немесе мәтінді қою арқылы алғашқы тестіңізді жасаңыз. Бұл оңай!',
+  },
 };
 
 String tr(BuildContext context, String key) {
@@ -470,7 +493,7 @@ class _HomeShellState extends State<HomeShell> {
       body: IndexedStack(
         index: _currentIndex,
         children: [
-           const MyTestsPage(),
+           MyTestsPage(onCreateTest: () => setState(() => _currentIndex = 1)),
            CreateTestPage(onSaved: _goToMyTests),
            const SettingsPage(),
         ],
@@ -632,6 +655,24 @@ class _CreateTestPageState extends State<CreateTestPage> {
     );
   }
 
+  void _showInstructions() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(tr(context, 'instruction_title')),
+        content: SingleChildScrollView(
+          child: Text(tr(context, 'instruction_content')),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> importFile() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.any,
@@ -722,6 +763,12 @@ class _CreateTestPageState extends State<CreateTestPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(tr(context, 'create_test_title')),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            onPressed: _showInstructions,
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(
@@ -778,7 +825,8 @@ class _CreateTestPageState extends State<CreateTestPage> {
 /* ================= MY TESTS ================= */
 
 class MyTestsPage extends StatefulWidget {
-  const MyTestsPage({super.key});
+  final VoidCallback? onCreateTest;
+  const MyTestsPage({super.key, this.onCreateTest});
 
   @override
   State<MyTestsPage> createState() => _MyTestsPageState();
@@ -1045,10 +1093,43 @@ class _MyTestsPageState extends State<MyTestsPage> {
               if (TestStorage.groups.isEmpty)
                 SliverFillRemaining(
                   child: Center(
-                    child: Text(
-                      'No tests yet',
-                      style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                        color: Theme.of(context).colorScheme.secondary,
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.library_books_rounded,
+                            size: 80,
+                            color: Theme.of(context).colorScheme.tertiary,
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            tr(context, 'welcome_title'),
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            tr(context, 'welcome_desc'),
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          FilledButton.icon(
+                            onPressed: widget.onCreateTest,
+                            icon: const Icon(Icons.add_circle_outline),
+                            label: Text(tr(context, 'tab_create_test')),
+                            style: FilledButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
