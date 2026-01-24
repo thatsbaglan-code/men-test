@@ -14,7 +14,7 @@ final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 enum AppLanguage { kk, ru, en }
 
 final ValueNotifier<AppLanguage> languageNotifier =
-    ValueNotifier(AppLanguage.en);
+    ValueNotifier(AppLanguage.kk);
 
 // ✅ Forces MyTestsPage to refresh even with IndexedStack
 final ValueNotifier<int> testsRevision = ValueNotifier<int>(0);
