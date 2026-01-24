@@ -634,8 +634,7 @@ class _CreateTestPageState extends State<CreateTestPage> {
 
   Future<void> importFile() async {
     final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['txt', 'docx'],
+      type: FileType.any,
       withData: true,
     );
 
@@ -644,6 +643,13 @@ class _CreateTestPageState extends State<CreateTestPage> {
     final file = result.files.single;
     final bytes = file.bytes!;
     final name = file.name.toLowerCase();
+    
+    if (!name.endsWith('.txt') && !name.endsWith('.docx')) {
+      if (!mounted) return;
+      _showAlert('Invalid File', 'Please select a .txt or .docx file.');
+      return;
+    }
+
     String content = '';
 
     try {
