@@ -16,6 +16,8 @@ enum AppLanguage { kk, ru, en }
 final ValueNotifier<AppLanguage> languageNotifier =
     ValueNotifier(AppLanguage.kk);
 
+final ValueNotifier<double> textScaleNotifier = ValueNotifier(1.0);
+
 // ✅ Forces MyTestsPage to refresh even with IndexedStack
 final ValueNotifier<int> testsRevision = ValueNotifier<int>(0);
 void bumpTestsRevision() => testsRevision.value = testsRevision.value + 1;
@@ -131,6 +133,11 @@ const Map<String, Map<AppLanguage, String>> _tr = {
     AppLanguage.ru: 'Создайте свой первый тест, импортировав файл или вставив текст. Это просто!',
     AppLanguage.kk: 'Файлды импорттау немесе мәтінді қою арқылы алғашқы тестіңізді жасаңыз. Бұл оңай!',
   },
+  'font_size': {
+    AppLanguage.en: 'Font size',
+    AppLanguage.ru: 'Размер шрифта',
+    AppLanguage.kk: 'Қаріп өлшемі',
+  },
 };
 
 String tr(BuildContext context, String key) {
@@ -210,6 +217,7 @@ class TestStorage {
 
   static const _themeKey = 'theme_mode';
   static const _langKey = 'app_language';
+  static const _textScaleKey = 'text_scale';
 
   static List<TestGroup> groups = [];
 
@@ -252,6 +260,9 @@ class TestStorage {
     if (lang == 'kk') languageNotifier.value = AppLanguage.kk;
     if (lang == 'ru') languageNotifier.value = AppLanguage.ru;
     if (lang == 'en') languageNotifier.value = AppLanguage.en;
+
+    final scale = prefs.getDouble(_textScaleKey);
+    if (scale != null) textScaleNotifier.value = scale;
   }
 
   static Future<void> saveTests() async {
@@ -278,6 +289,11 @@ class TestStorage {
       AppLanguage.en => 'en',
     };
     await prefs.setString(_langKey, code);
+  }
+
+  static Future<void> saveTextScale(double scale) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_textScaleKey, scale);
   }
 }
 
@@ -387,10 +403,21 @@ class MyApp extends StatelessWidget {
         return ValueListenableBuilder(
           valueListenable: languageNotifier,
           builder: (_, AppLanguage lang, __) {
-            return MaterialApp(
-              debugShowCheckedModeBanner: false,
-              theme: ThemeData(
-                useMaterial3: true,
+            return ValueListenableBuilder(
+              valueListenable: textScaleNotifier,
+              builder: (_, double scale, __) {
+                return MaterialApp(
+                  debugShowCheckedModeBanner: false,
+                  builder: (context, child) {
+                    return MediaQuery(
+                      data: MediaQuery.of(context).copyWith(
+                        textScaler: TextScaler.linear(scale),
+                      ),
+                      child: child!,
+                    );
+                  },
+                  theme: ThemeData(
+                    useMaterial3: true,
                 brightness: Brightness.light,
                 colorScheme: ColorScheme.fromSeed(
                   seedColor: Colors.indigo,
@@ -450,7 +477,9 @@ class MyApp extends StatelessWidget {
                 DefaultMaterialLocalizations.delegate,
                 DefaultWidgetsLocalizations.delegate,
               ],
-              home: const HomeShell(),
+                  home: const HomeShell(),
+                );
+              },
             );
           },
         );
@@ -594,6 +623,39 @@ class SettingsPage extends StatelessWidget {
                   themeNotifier.value = v ? ThemeMode.dark : ThemeMode.light;
                   await TestStorage.saveTheme(themeNotifier.value);
                 },
+              );
+            },
+          ),
+          const Divider(),
+          _buildSectionHeader(context, tr(context, 'font_size')),
+          ValueListenableBuilder(
+            valueListenable: textScaleNotifier,
+            builder: (_, double scale, __) {
+              return Column(
+                children: [
+                  Slider(
+                    value: scale,
+                    min: 0.8,
+                    max: 1.4,
+                    divisions: 6,
+                    label: scale.toStringAsFixed(1),
+                    onChanged: (v) {
+                      textScaleNotifier.value = v;
+                      TestStorage.saveTextScale(v);
+                    },
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('A', style: TextStyle(fontSize: 14 * 0.8 / scale)), // Visual hint small
+                        Text('A', style: TextStyle(fontSize: 14 * 1.4 / scale)), // Visual hint large
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
               );
             },
           ),
@@ -1574,11 +1636,17 @@ class _PlayTestPageState extends State<PlayTestPage> {
                   key: ValueKey<int>(index),
                   child: Column(
                     children: [
-                      Padding(
+                      Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.all(16),
                         padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.4),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         child: Text(
                           q.text,
-                          style: Theme.of(context).textTheme.headlineSmall,
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -1634,7 +1702,7 @@ class _PlayTestPageState extends State<PlayTestPage> {
                                           child: Text(
                                             a,
                                             style: TextStyle(
-                                              fontSize: 16,
+                                              fontSize: 18,
                                               color: textColor,
                                               fontWeight: (isAnswered && a == q.correct) ? FontWeight.bold : null,
                                             ),
@@ -1949,10 +2017,18 @@ class _MockTestPageState extends State<MockTestPage> {
                     style: Theme.of(context).textTheme.titleMedium!.copyWith(color: Colors.grey),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    q.text,
-                    style: Theme.of(context).textTheme.headlineSmall,
-                    textAlign: TextAlign.center,
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.4),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(
+                      q.text,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ],
               ),
@@ -1961,7 +2037,7 @@ class _MockTestPageState extends State<MockTestPage> {
               child: ListView(
                 children: q.answers.map((a) {
                   return RadioListTile<String>(
-                    title: Text(a),
+                    title: Text(a, style: const TextStyle(fontSize: 18)),
                     value: a,
                     groupValue: sel,
                     onChanged: (v) => pick(v!),
