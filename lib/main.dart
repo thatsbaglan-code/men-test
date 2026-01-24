@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:docx_to_text/docx_to_text.dart';
@@ -637,18 +636,20 @@ class _CreateTestPageState extends State<CreateTestPage> {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['txt', 'docx'],
+      withData: true,
     );
 
-    if (result == null || result.files.single.path == null) return;
+    if (result == null || result.files.single.bytes == null) return;
 
-    final path = result.files.single.path!;
+    final file = result.files.single;
+    final bytes = file.bytes!;
+    final name = file.name.toLowerCase();
     String content = '';
 
     try {
-      if (path.toLowerCase().endsWith('.txt')) {
-        content = await File(path).readAsString();
-      } else if (path.toLowerCase().endsWith('.docx')) {
-        final bytes = await File(path).readAsBytes();
+      if (name.endsWith('.txt')) {
+        content = utf8.decode(bytes);
+      } else if (name.endsWith('.docx')) {
         content = docxToText(bytes);
       }
     } catch (e) {
